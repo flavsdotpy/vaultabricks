@@ -1,51 +1,17 @@
-from fastapi import FastAPI, Request, HTTPException, Query
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException, Query, APIRouter
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.workspace import AclPermission
-from pydantic import BaseModel
-from typing import List, Dict, Optional
-from datetime import datetime
-import os
 
-app = FastAPI(title="Vaultabricks")
+from models import SecretCreate, SecretUpdate, AclCreate, AclUpdate
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Templates
-templates = Jinja2Templates(directory="templates")
+router = APIRouter(
+    prefix="/api",
+    tags=["secrets"],
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
-class SecretCreate(BaseModel):
-    key: str
-    value: str
-
-class SecretUpdate(BaseModel):
-    value: str
-
-class AclCreate(BaseModel):
-    principal: str
-    permission: str
-
-class AclUpdate(BaseModel):
-    permission: str
-
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/api/scopes")
+@router.get("/scopes")
 async def list_scopes(workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -64,7 +30,7 @@ async def list_scopes(workspace_host: str = Query(...), pat: str = Query(...)):
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/scopes/{scope_name}/secrets")
+@router.get("/scopes/{scope_name}/secrets")
 async def list_secrets(scope_name: str, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -89,7 +55,7 @@ async def list_secrets(scope_name: str, workspace_host: str = Query(...), pat: s
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/scopes/{scope_name}/secrets")
+@router.post("/scopes/{scope_name}/secrets")
 async def create_secret(scope_name: str, secret: SecretCreate, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -108,7 +74,7 @@ async def create_secret(scope_name: str, secret: SecretCreate, workspace_host: s
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.put("/api/scopes/{scope_name}/secrets/{key}")
+@router.put("/scopes/{scope_name}/secrets/{key}")
 async def update_secret(scope_name: str, key: str, secret: SecretUpdate, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -127,7 +93,7 @@ async def update_secret(scope_name: str, key: str, secret: SecretUpdate, workspa
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/scopes/{scope_name}/secrets/{key}")
+@router.delete("/scopes/{scope_name}/secrets/{key}")
 async def delete_secret(scope_name: str, key: str, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -146,7 +112,7 @@ async def delete_secret(scope_name: str, key: str, workspace_host: str = Query(.
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/scopes/{scope_name}/acls")
+@router.get("/scopes/{scope_name}/acls")
 async def list_acls(scope_name: str, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -171,7 +137,7 @@ async def list_acls(scope_name: str, workspace_host: str = Query(...), pat: str 
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/scopes/{scope_name}/acls")
+@router.post("/scopes/{scope_name}/acls")
 async def create_acl(scope_name: str, acl: AclCreate, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -194,7 +160,7 @@ async def create_acl(scope_name: str, acl: AclCreate, workspace_host: str = Quer
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.put("/api/scopes/{scope_name}/acls/{principal}")
+@router.put("/scopes/{scope_name}/acls/{principal}")
 async def update_acl(scope_name: str, principal: str, acl: AclUpdate, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
@@ -217,7 +183,7 @@ async def update_acl(scope_name: str, principal: str, acl: AclUpdate, workspace_
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/scopes/{scope_name}/acls/{principal}")
+@router.delete("/scopes/{scope_name}/acls/{principal}")
 async def delete_acl(scope_name: str, principal: str, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         # Validate workspace host
