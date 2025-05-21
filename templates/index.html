@@ -206,11 +206,13 @@
                     <form id="secretForm" class="space-y-4">
                         <div>
                             <label for="secretKey" class="block text-sm font-medium text-gray-700">Key</label>
-                            <input type="text" id="secretKey" name="key" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <input type="text" id="secretKey" name="key" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <p class="mt-1 text-sm text-red-600 hidden" id="keyError">Key is required</p>
                         </div>
                         <div>
                             <label for="secretValue" class="block text-sm font-medium text-gray-700">Value</label>
-                            <textarea id="secretValue" name="value" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                            <textarea id="secretValue" name="value" rows="4" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                            <p class="mt-1 text-sm text-red-600 hidden" id="valueError">Value is required</p>
                         </div>
                         <div class="flex justify-end space-x-3">
                             <button type="button" id="secretFormCancel" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -226,10 +228,6 @@
         </div>
     </div>
 
-    <script>
-        // Pass server-side config to frontend
-        window.ALLOW_SECRET_VALUE_VIEW = {{ allow_secret_value_view|tojson }};
-    </script>
     <script src="/static/js/main.js"></script>
 </body>
 </html> 

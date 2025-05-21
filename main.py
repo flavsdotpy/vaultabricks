@@ -11,9 +11,6 @@ import os
 
 app = FastAPI(title="Vaultabricks")
 
-# Configuration
-ALLOW_SECRET_VALUE_VIEW = os.getenv("ALLOW_SECRET_VALUE_VIEW", "false").lower() == "true"
-
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -38,10 +35,7 @@ class SecretUpdate(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "allow_secret_value_view": ALLOW_SECRET_VALUE_VIEW
-    })
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/api/scopes")
 async def list_scopes(workspace_host: str = Query(...), pat: str = Query(...)):
@@ -146,8 +140,6 @@ async def delete_secret(scope_name: str, key: str, workspace_host: str = Query(.
 
 @app.get("/api/scopes/{scope_name}/secrets/{key}")
 async def get_secret(scope_name: str, key: str, workspace_host: str, pat: str):
-    if not ALLOW_SECRET_VALUE_VIEW:
-        raise HTTPException(status_code=403, detail="Secret value viewing is disabled")
     try:
         client = WorkspaceClient(host=workspace_host, token=pat)
         secret = client.secrets.get_secret(scope=scope_name, key=key)

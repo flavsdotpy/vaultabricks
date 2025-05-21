@@ -83,7 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
         secretFormTitle.textContent = title;
         secretKeyInput.value = secret ? secret.key : '';
         secretValueInput.value = '';
+        secretValueInput.placeholder = secret ? '****redacted****' : '';
         secretKeyInput.disabled = !!secret;
+        // Reset error states
+        document.getElementById('keyError').classList.add('hidden');
+        document.getElementById('valueError').classList.add('hidden');
         secretFormModal.classList.remove('hidden');
     };
 
@@ -355,10 +359,25 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const key = secretKeyInput.value.trim();
         const value = secretValueInput.value.trim();
+        let hasError = false;
 
-        if (!key || !value) {
-            secretsErrorMessage.textContent = 'Key and value are required';
-            showSecretsState(secretsErrorState);
+        // Reset error states
+        document.getElementById('keyError').classList.add('hidden');
+        document.getElementById('valueError').classList.add('hidden');
+
+        // Validate key
+        if (!key) {
+            document.getElementById('keyError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        // Validate value
+        if (!value || value === '****redacted****') {
+            document.getElementById('valueError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (hasError) {
             return;
         }
 
