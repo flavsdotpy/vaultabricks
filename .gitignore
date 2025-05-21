@@ -1,5 +1,6 @@
 .env
 .cursor/
+.vscode/
 .python-version
 __pycache__/
 changes.md

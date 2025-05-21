@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const scopesGrid = document.getElementById('scopesGrid');
     const scopeItemTemplate = document.getElementById('scopeItemTemplate');
 
+    // ACL Management
+    let currentAclPrincipal = null;
+
     // Show only one state at a time
     const showState = (state) => {
         [initialState, loadingState, errorState, emptyState, scopesList, scopeDetailsView].forEach(el => {
@@ -335,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentScope = scopeName;
         scopeNameElement.textContent = scopeName;
         fetchSecrets(scopeName);
+        fetchAcls(scopeName);
     };
 
     // Event listeners
@@ -346,6 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     refreshSecretsButton.addEventListener('click', () => {
         fetchSecrets(currentScope);
+        fetchAcls(currentScope);
     });
 
     // Secret management event listeners
@@ -392,6 +397,210 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             secretsErrorMessage.textContent = error.message;
             showSecretsState(secretsErrorState);
+        }
+    });
+
+    // Show ACL form modal
+    const showAclForm = (title, acl = null) => {
+        currentAclPrincipal = acl ? acl.principal : null;
+        document.getElementById('aclFormTitle').textContent = title;
+        document.getElementById('aclPrincipal').value = acl ? acl.principal : '';
+        document.getElementById('aclPrincipal').disabled = !!acl;
+        document.getElementById('aclPermission').value = acl ? acl.permission : '';
+        document.getElementById('aclFormSubmit').textContent = acl ? 'Update' : 'Create';
+        // Reset error states
+        document.getElementById('principalError').classList.add('hidden');
+        document.getElementById('permissionError').classList.add('hidden');
+        document.getElementById('aclFormModal').classList.remove('hidden');
+    };
+
+    // Hide ACL form modal
+    const hideAclForm = () => {
+        document.getElementById('aclFormModal').classList.add('hidden');
+        document.getElementById('aclForm').reset();
+        currentAclPrincipal = null;
+    };
+
+    // Fetch ACLs for a scope
+    const fetchAcls = async (scopeName) => {
+        const workspaceHost = workspaceHostInput.value.trim();
+        const pat = patInput.value.trim();
+
+        try {
+            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`);
+            if (!response.ok) {
+                const error = await response.json();
+                if (response.status === 401) {
+                    throw new Error('Invalid PAT or insufficient permissions');
+                } else if (response.status === 404) {
+                    throw new Error('Scope not found');
+                } else {
+                    throw new Error(error.detail || 'Failed to fetch ACLs');
+                }
+            }
+            
+            const acls = await response.json();
+            
+            // Clear previous ACLs
+            const aclsList = document.getElementById('aclsList');
+            aclsList.innerHTML = '';
+            
+            if (acls.length === 0) {
+                document.getElementById('emptyAclsState').classList.remove('hidden');
+                document.getElementById('aclsList').classList.add('hidden');
+            } else {
+                document.getElementById('emptyAclsState').classList.add('hidden');
+                document.getElementById('aclsList').classList.remove('hidden');
+                
+                // Add new ACLs
+                acls.forEach(acl => {
+                    const aclItem = document.getElementById('aclItemTemplate').content.cloneNode(true);
+                    const aclDiv = aclItem.querySelector('div');
+                    aclDiv.querySelector('h3').textContent = acl.principal;
+                    aclDiv.querySelector('.permission').textContent = acl.permission;
+                    
+                    // Add event listeners for edit and delete
+                    const editButton = aclDiv.querySelector('.editAcl');
+                    const deleteButton = aclDiv.querySelector('.deleteAcl');
+                    
+                    editButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showAclForm('Edit ACL', acl);
+                    });
+                    
+                    deleteButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showConfirmation(
+                            'Delete ACL',
+                            `Are you sure you want to delete the ACL for ${acl.principal}? This action cannot be undone.`,
+                            () => deleteAcl(scopeName, acl.principal)
+                        );
+                    });
+                    
+                    aclsList.appendChild(aclItem);
+                });
+            }
+        } catch (error) {
+            document.getElementById('aclsErrorState').classList.remove('hidden');
+            document.getElementById('aclsErrorMessage').textContent = error.message;
+        }
+    };
+
+    // Create a new ACL
+    const createAcl = async (scopeName, principal, permission) => {
+        const workspaceHost = workspaceHostInput.value.trim();
+        const pat = patInput.value.trim();
+
+        try {
+            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ principal, permission }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to create ACL');
+            }
+
+            hideAclForm();
+            fetchAcls(scopeName);
+        } catch (error) {
+            document.getElementById('aclsErrorState').classList.remove('hidden');
+            document.getElementById('aclsErrorMessage').textContent = error.message;
+        }
+    };
+
+    // Update an existing ACL
+    const updateAcl = async (scopeName, principal, permission) => {
+        const workspaceHost = workspaceHostInput.value.trim();
+        const pat = patInput.value.trim();
+
+        try {
+            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ permission }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to update ACL');
+            }
+
+            hideAclForm();
+            fetchAcls(scopeName);
+        } catch (error) {
+            document.getElementById('aclsErrorState').classList.remove('hidden');
+            document.getElementById('aclsErrorMessage').textContent = error.message;
+        }
+    };
+
+    // Delete an ACL
+    const deleteAcl = async (scopeName, principal) => {
+        const workspaceHost = workspaceHostInput.value.trim();
+        const pat = patInput.value.trim();
+
+        try {
+            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to delete ACL');
+            }
+
+            fetchAcls(scopeName);
+        } catch (error) {
+            document.getElementById('aclsErrorState').classList.remove('hidden');
+            document.getElementById('aclsErrorMessage').textContent = error.message;
+        }
+    };
+
+    // Add event listeners for ACL management
+    document.getElementById('addAcl').addEventListener('click', () => {
+        showAclForm('Add ACL');
+    });
+
+    document.getElementById('aclFormCancel').addEventListener('click', hideAclForm);
+
+    document.getElementById('aclForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Reset error states
+        document.getElementById('principalError').classList.add('hidden');
+        document.getElementById('permissionError').classList.add('hidden');
+        
+        const principal = document.getElementById('aclPrincipal').value.trim();
+        const permission = document.getElementById('aclPermission').value;
+        
+        // Validate inputs
+        let hasError = false;
+        if (!principal) {
+            document.getElementById('principalError').classList.remove('hidden');
+            hasError = true;
+        }
+        if (!permission) {
+            document.getElementById('permissionError').classList.remove('hidden');
+            hasError = true;
+        }
+        
+        if (hasError) return;
+        
+        try {
+            if (currentAclPrincipal) {
+                await updateAcl(currentScope, currentAclPrincipal, permission);
+            } else {
+                await createAcl(currentScope, principal, permission);
+            }
+        } catch (error) {
+            document.getElementById('aclsErrorState').classList.remove('hidden');
+            document.getElementById('aclsErrorMessage').textContent = error.message;
         }
     });
 }); 
