@@ -19,10 +19,10 @@ Vaultabricks is a web-based interface for managing Databricks Secrets and Access
 docker pull ghcr.io/your-username/vaultabricks:latest
 
 # Run the container
-docker run -p 5000:5000 ghcr.io/your-username/vaultabricks:latest
+docker run -p 5050:5050 ghcr.io/your-username/vaultabricks:latest
 ```
 
-The application will be available at `http://localhost:5000`
+The application will be available at `http://localhost:5050`
 
 ### Local Development
 
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 3. Run the application:
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --reload --port 5050
 ```
 
 ## Usage
