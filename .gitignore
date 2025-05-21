@@ -1,0 +1,5 @@
+.env
+.cursor/
+.python-version
+__pycache__/
+changes.md
