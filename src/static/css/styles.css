@@ -1,0 +1,158 @@
+:root {
+    --databricks-blue: #FF3621;
+    --databricks-gray: #1E1E1E;
+    --databricks-light-gray: #F5F5F5;
+    --databricks-red: #FF3621;
+    --databricks-red-hover: #E62E1A;
+    --databricks-red-light: #FF4D3D;
+    --databricks-red-dark: #CC2B1A;
+    --databricks-edit-border: rgb(192, 205, 216);
+    --databricks-create: rgb(34, 114, 180);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Navbar styles */
+.navbar {
+    background-color: var(--databricks-gray);
+    border-bottom: 1px solid #2D2D2D;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.navbar-subtitle {
+    font-size: 0.875rem;
+    color: #9CA3AF;
+}
+
+.databricks-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: white;
+    background-color: var(--databricks-create);
+}
+
+.databricks-btn:hover {
+    background-color: rgb(28, 94, 150);
+}
+
+.databricks-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--databricks-create);
+}
+
+.databricks-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--databricks-edit-border);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: #374151;
+    background-color: white;
+}
+
+.databricks-btn-secondary:hover {
+    background-color: #F9FAFB;
+}
+
+.databricks-btn-secondary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--databricks-edit-border);
+}
+
+.databricks-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: white;
+    background-color: var(--databricks-red);
+}
+
+.databricks-btn-danger:hover {
+    background-color: var(--databricks-red-hover);
+}
+
+.databricks-btn-danger:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--databricks-red);
+}
+
+.databricks-btn-light {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: white;
+    background-color: var(--databricks-red-light);
+}
+
+.databricks-btn-light:hover {
+    background-color: var(--databricks-red);
+}
+
+.databricks-btn-light:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--databricks-red-light);
+}
+
+.databricks-input {
+    display: block;
+    width: 100%;
+    border-radius: 0.375rem;
+    border: 1px solid #D1D5DB;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    font-size: 0.875rem;
+}
+
+.databricks-input:focus {
+    outline: none;
+    border-color: var(--databricks-blue);
+    box-shadow: 0 0 0 1px var(--databricks-blue);
+}
+
+.databricks-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid #E5E7EB;
+}
+
+.databricks-header {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.databricks-subheader {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+} 

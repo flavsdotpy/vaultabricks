@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
             : '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>';
     });
 
-    // Validate workspace host URL
     const validateWorkspaceHost = (host) => {
         try {
             const url = new URL(host);
@@ -25,12 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Validate PAT format (should be a 32 character hex string)
     const validatePAT = (pat) => {
         return /^dapi[a-fA-F0-9]{32}$/.test(pat);
     };
 
-    // Show scope details view
     const showScopeDetails = async (scopeName) => {
         currentScope = scopeName;
 
@@ -51,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Show only one state at a time
     const showState = (state) => {
         [$('initialState'), $('loadingState'), $('errorState'), $('emptyState'), $('scopesList'), $('scopeDetails')].forEach(el => {
             el.classList.add('hidden');
@@ -59,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
         state.classList.remove('hidden');
     };
 
-    // Show only one secrets state at a time
     const showSecretsState = (state) => {
         [$('secretsList'), $('emptySecretsState'), $('secretsErrorState'), $('secretsLoadingState')].forEach(el => {
             el.classList.add('hidden');
@@ -67,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
         state.classList.remove('hidden');
     };
 
-    // Show only one acl state at a time
     const showAclsState = (state) => {
         [$('aclsList'), $('emptyAclsState'), $('aclsErrorState'), $('aclsLoadingState')].forEach(el => {
             el.classList.add('hidden');
@@ -75,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         state.classList.remove('hidden');
     };
 
-    // Show confirmation modal
     const showConfirmation = (title, message, onConfirm) => {
         $('confirmationTitle'	).textContent = title;
         $('confirmationMessage').textContent = message;
@@ -98,28 +91,25 @@ document.addEventListener('DOMContentLoaded', () => {
         $('confirmationCancel').addEventListener('click', handleCancel);
     };
 
-    // Show secret form modal
     const showSecretForm = (title, secret = null) => {
         currentSecret = secret;
         $('secretFormTitle').textContent = title;
-        $('secretKeyInput').value = secret ? secret.key : '';
-        $('secretValueInput').value = '';
-        $('secretValueInput').placeholder = secret ? '****redacted****' : '';
-        $('secretKeyInput').disabled = !!secret;
-        // Reset error states
+        $('secretKey').value = secret ? secret.key : '';
+        $('secretValue').value = '';
+        $('secretValue').placeholder = secret ? '****redacted****' : '';
+        $('secretKey').disabled = !!secret;
+        
         $('keyError').classList.add('hidden');
         $('valueError').classList.add('hidden');
         $('secretFormModal').classList.remove('hidden');
     };
 
-    // Hide secret form modal
     const hideSecretForm = () => {
         $('secretFormModal').classList.add('hidden');
         $('secretForm').reset();
         currentSecret = null;
     };
 
-    // Fetch scopes function that can be called from anywhere
     const fetchScopes = async () => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -129,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Validate inputs
         if (!validateWorkspaceHost(workspaceHost)) {
             $('errorMessage').textContent = 'Invalid workspace host URL. Must be a valid Databricks workspace URL (e.g., https://your-workspace.cloud.databricks.com)';
             showState($('errorState'));
@@ -164,10 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Clear previous scopes
             $('scopesGrid').innerHTML = '';
             
-            // Add new scopes
             scopes.forEach(scope => {
                 const scopeItem = $('scopeItemTemplate').content.cloneNode(true);
                 const scopeDiv = scopeItem.querySelector('div');
@@ -184,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Fetch secrets for a scope
     const fetchSecrets = async (scopeName) => {
         $('secretsList').innerHTML = '';
         showSecretsState($('secretsLoadingState'));
@@ -206,13 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const secrets = await response.json();
-            
-            // Clear previous secrets
-            
+
             if (secrets.length === 0) {
                 showSecretsState($('emptySecretsState'));
             } else {
-                // Add new secrets
                 secrets.forEach(secret => {
                     const secretItem = $('secretItemTemplate').content.cloneNode(true);
                     secretItem.querySelector('h3').textContent = secret.key;
@@ -220,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         ? new Date(parseInt(secret.last_updated)).toLocaleString() 
                         : 'Never';
                     
-                    // Add event listeners for edit and delete
                     const editButton = secretItem.querySelector('.editSecret');
                     const deleteButton = secretItem.querySelector('.deleteSecret');
                     
@@ -248,7 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Create a new secret
     const createSecret = async (scopeName, key, value) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -275,7 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Update an existing secret
     const updateSecret = async (scopeName, key, value) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -302,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Delete a secret
     const deleteSecret = async (scopeName, key) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -324,7 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Event listeners
     $('workspaceHost').addEventListener('change', fetchScopes);
     $('pat').addEventListener('change', fetchScopes);
     $('refreshScopes').addEventListener('click', fetchScopes);
@@ -336,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showScopeDetails(currentScope)
     });
 
-    // Secret management event listeners
     $('addSecret').addEventListener('click', () => {
         showSecretForm('Add Secret');
     });
@@ -345,21 +322,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     $('secretForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const key = $('secretKeyInput').value.trim();
-        const value = $('secretValueInput').value.trim();
+        const key = $('secretKey').value.trim();
+        const value = $('secretValue').value.trim();
         let hasError = false;
 
-        // Reset error states
         $('keyError').classList.add('hidden');
         $('valueError').classList.add('hidden');
 
-        // Validate key
         if (!key) {
             $('keyError').classList.remove('hidden');
             hasError = true;
         }
 
-        // Validate value
         if (!value || value === '****redacted****') {
             $('valueError').classList.remove('hidden');
             hasError = true;
@@ -383,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Show ACL form modal
     const showAclForm = (title, acl = null) => {
         currentAclPrincipal = acl ? acl.principal : null;
         $('aclFormTitle').textContent = title;
@@ -391,20 +364,18 @@ document.addEventListener('DOMContentLoaded', () => {
         $('aclPrincipal').disabled = !!acl;
         $('aclPermission').value = acl ? acl.permission : '';
         $('aclFormSubmit').textContent = acl ? 'Update' : 'Create';
-        // Reset error states
+        
         $('principalError').classList.add('hidden');
         $('permissionError').classList.add('hidden');
         $('aclFormModal').classList.remove('hidden');
     };
 
-    // Hide ACL form modal
     const hideAclForm = () => {
         $('aclFormModal').classList.add('hidden');
         $('aclForm').reset();
         currentAclPrincipal = null;
     };
 
-    // Fetch ACLs for a scope
     const fetchAcls = async (scopeName) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -434,14 +405,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 $('emptyAclsState').classList.add('hidden');
                 $('aclsList').classList.remove('hidden');
                 
-                // Add new ACLs
                 acls.forEach(acl => {
                     const aclItem = $('aclItemTemplate').content.cloneNode(true);
                     const aclDiv = aclItem.querySelector('div');
                     aclDiv.querySelector('h3').textContent = acl.principal;
                     aclDiv.querySelector('.permission').textContent = acl.permission;
                     
-                    // Add event listeners for edit and delete
                     const editButton = aclDiv.querySelector('.editAcl');
                     const deleteButton = aclDiv.querySelector('.deleteAcl');
                     
@@ -468,7 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Create a new ACL
     const createAcl = async (scopeName, principal, permission) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -495,7 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Update an existing ACL
     const updateAcl = async (scopeName, principal, permission) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -522,7 +489,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Delete an ACL
     const deleteAcl = async (scopeName, principal) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
@@ -544,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Add event listeners for ACL management
     $('addAcl').addEventListener('click', () => {
         showAclForm('Add ACL');
     });
@@ -554,14 +519,12 @@ document.addEventListener('DOMContentLoaded', () => {
     $('aclForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Reset error states
         $('principalError').classList.add('hidden');
         $('permissionError').classList.add('hidden');
         
         const principal = $('aclPrincipal').value.trim();
         const permission = $('aclPermission').value;
         
-        // Validate inputs
         let hasError = false;
         if (!principal) {
             $('principalError').classList.remove('hidden');

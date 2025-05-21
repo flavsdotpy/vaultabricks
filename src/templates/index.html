@@ -5,35 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vaultabricks</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body class="bg-gray-50">
+<body class="bg-[#F5F5F5]">
+    <!-- Navbar -->
+    <nav class="bg-[#1E1E1E] border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-2xl font-bold text-white">Vaultabricks</span>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <span class="text-sm text-gray-400">Databricks Secrets Manager</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="container mx-auto px-4 py-8">
         <!-- Connection Settings Section -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <div class="databricks-card p-6 mb-8">
             <div class="space-y-4">
                 <div>
-                    <label for="workspaceHost" class="block text-sm font-medium text-gray-700">Workspace Host</label>
+                    <label for="workspaceHost" class="databricks-subheader">Workspace Host</label>
                     <div class="mt-1 relative rounded-md shadow-sm">
                         <input type="text" 
                                name="workspaceHost" 
                                id="workspaceHost" 
-                               class="focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+                               class="databricks-input"
                                placeholder="e.g. https://your-workspace.cloud.databricks.com">
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="flex-1">
-                        <label for="pat" class="block text-sm font-medium text-gray-700">Databricks Personal Access Token</label>
+                        <label for="pat" class="databricks-subheader">Databricks Personal Access Token</label>
                         <div class="mt-1 relative rounded-md shadow-sm">
                             <input type="password" 
                                    name="pat" 
                                    id="pat" 
-                                   class="focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                   class="databricks-input"
                                    placeholder="Enter your PAT">
                         </div>
                     </div>
-                    <button id="toggleLock" 
-                            class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button id="toggleLock" class="databricks-btn">
                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                         </svg>
@@ -43,7 +61,7 @@
         </div>
 
         <!-- Main Content Area -->
-        <div id="mainContent" class="bg-white rounded-lg shadow p-6">
+        <div id="mainContent" class="databricks-card p-6">
             <!-- Initial State -->
             <div id="initialState" class="text-gray-500 text-center">
                 Enter your workspace host and PAT to start managing secrets
@@ -52,7 +70,7 @@
             <!-- Loading State -->
             <div id="loadingState" class="hidden">
                 <div class="flex justify-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF3621]"></div>
                 </div>
             </div>
 
@@ -66,7 +84,7 @@
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <h3 class="text-sm font-medium text-red-800">Error</h3>
+                            <h3 class="databricks-subheader text-red-800">Error</h3>
                             <div class="mt-2 text-sm text-red-700">
                                 <p id="errorMessage"></p>
                             </div>
@@ -84,8 +102,8 @@
             <div id="scopesList" class="hidden">
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-medium text-gray-900">Secret Scopes</h2>
-                        <button id="refreshScopes" class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <h2 class="databricks-header">Secret Scopes</h2>
+                        <button id="refreshScopes" class="databricks-btn">
                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
@@ -99,26 +117,26 @@
 
             <!-- Scope Item Template -->
             <template id="scopeItemTemplate">
-                <div class="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" data-scope-name="">
-                    <h3 class="text-sm font-medium text-gray-900"></h3>
+                <div class="databricks-card p-4 hover:shadow-md transition-shadow cursor-pointer" data-scope-name="">
+                    <h3 class="databricks-subheader"></h3>
                 </div>
             </template>
 
             <!-- Secret Item Template -->
             <template id="secretItemTemplate">
-                <div class="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="databricks-card p-4 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-sm font-medium text-gray-900"></h3>
+                            <h3 class="databricks-subheader"></h3>
                             <p class="text-sm text-gray-500">Last updated: <span class="lastUpdated"></span></p>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <button class="editSecret inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <button class="editSecret databricks-btn-secondary">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
-                            <button class="deleteSecret inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <button class="deleteSecret databricks-btn-danger">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -130,19 +148,19 @@
 
             <!-- ACL Item Template -->
             <template id="aclItemTemplate">
-                <div class="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="databricks-card p-4 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-sm font-medium text-gray-900"></h3>
+                            <h3 class="databricks-subheader"></h3>
                             <p class="text-sm text-gray-500">Permission: <span class="permission font-medium"></span></p>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <button class="editAcl inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button class="editAcl databricks-btn-secondary">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
-                            <button class="deleteAcl inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <button class="deleteAcl databricks-btn-danger">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -157,14 +175,14 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-2">
-                            <button id="backToScopes" class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <button id="backToScopes" class="databricks-btn-secondary">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
                             </button>
-                            <h2 class="text-lg font-medium text-gray-900">Scope: <span id="scopeName"></span></h2>
+                            <h2 class="databricks-header">Scope: <span id="scopeName"></span></h2>
                         </div>
-                        <button id="refreshDetails" class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button id="refreshDetails" class="databricks-btn">
                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
@@ -174,13 +192,13 @@
                     <!-- Secrets Section -->
                     <div class="mb-8">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-semibold text-gray-900">Secrets</h2>
-                            <button id="addSecret" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <h2 class="databricks-header">Secrets</h2>
+                            <button id="addSecret" class="databricks-btn">
                                 Add Secret
                             </button>
                         </div>
                         <div id="secretsLoadingState" class="hidden flex justify-center items-center py-8">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF3621]"></div>
                         </div>
                         <div id="secretsList" class="space-y-4">
                             <!-- Secret items will be added here -->
@@ -190,7 +208,7 @@
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No Secrets</h3>
+                            <h3 class="mt-2 databricks-subheader">No Secrets</h3>
                             <p class="mt-1 text-sm text-gray-500">Get started by creating a new secret.</p>
                         </div>
                         <!-- Error State -->
@@ -198,7 +216,7 @@
                             <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">Error</h3>
+                            <h3 class="mt-2 databricks-subheader">Error</h3>
                             <p id="secretsErrorMessage" class="mt-1 text-sm text-gray-500"></p>
                         </div>
                     </div>
@@ -206,13 +224,13 @@
                     <!-- ACL Management -->
                     <div class="mb-8">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-semibold text-gray-900">Access Control</h2>
-                            <button id="addAcl" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <h2 class="databricks-header">Access Control</h2>
+                            <button id="addAcl" class="databricks-btn">
                                 Add ACL
                             </button>
                         </div>
                         <div id="aclsLoadingState" class="hidden flex justify-center items-center py-8">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF3621]"></div>
                         </div>
                         <div id="aclsList" class="space-y-4">
                             <!-- ACL items will be added here -->
@@ -222,7 +240,7 @@
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No ACLs</h3>
+                            <h3 class="mt-2 databricks-subheader">No ACLs</h3>
                             <p class="mt-1 text-sm text-gray-500">Get started by creating a new ACL.</p>
                         </div>
                         <!-- Error State -->
@@ -230,7 +248,7 @@
                             <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">Error</h3>
+                            <h3 class="mt-2 databricks-subheader">Error</h3>
                             <p id="aclsErrorMessage" class="mt-1 text-sm text-gray-500"></p>
                         </div>
                     </div>
@@ -239,14 +257,14 @@
 
             <!-- Confirmation Modal -->
             <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-                <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4" id="confirmationTitle"></h3>
+                <div class="databricks-card p-6 max-w-md w-full mx-4">
+                    <h3 class="databricks-header mb-4" id="confirmationTitle"></h3>
                     <p class="text-sm text-gray-500 mb-6" id="confirmationMessage"></p>
                     <div class="flex justify-end space-x-3">
-                        <button id="confirmationCancel" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button id="confirmationCancel" class="databricks-btn-secondary">
                             Cancel
                         </button>
-                        <button id="confirmationConfirm" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        <button id="confirmationConfirm" class="databricks-btn-danger">
                             Confirm
                         </button>
                     </div>
@@ -255,24 +273,24 @@
 
             <!-- Secret Form Modal -->
             <div id="secretFormModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-                <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4" id="secretFormTitle"></h3>
+                <div class="databricks-card p-6 max-w-md w-full mx-4">
+                    <h3 class="databricks-header mb-4" id="secretFormTitle"></h3>
                     <form id="secretForm" class="space-y-4">
                         <div>
-                            <label for="secretKey" class="block text-sm font-medium text-gray-700">Key</label>
-                            <input type="text" id="secretKey" name="key" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <label for="secretKey" class="databricks-subheader">Key</label>
+                            <input type="text" id="secretKey" name="key" required class="databricks-input">
                             <p class="mt-1 text-sm text-red-600 hidden" id="keyError">Key is required</p>
                         </div>
                         <div>
-                            <label for="secretValue" class="block text-sm font-medium text-gray-700">Value</label>
-                            <textarea id="secretValue" name="value" rows="4" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                            <label for="secretValue" class="databricks-subheader">Value</label>
+                            <textarea id="secretValue" name="value" rows="4" required class="databricks-input"></textarea>
                             <p class="mt-1 text-sm text-red-600 hidden" id="valueError">Value is required</p>
                         </div>
                         <div class="flex justify-end space-x-3">
-                            <button type="button" id="secretFormCancel" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <button type="button" id="secretFormCancel" class="databricks-btn-secondary">
                                 Cancel
                             </button>
-                            <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <button type="submit" class="databricks-btn">
                                 Save
                             </button>
                         </div>
@@ -285,18 +303,18 @@
                 <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
                     <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                    <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                    <div class="inline-block align-bottom databricks-card px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                         <div>
-                            <h3 id="aclFormTitle" class="text-lg leading-6 font-medium text-gray-900 mb-4"></h3>
+                            <h3 id="aclFormTitle" class="databricks-header mb-4"></h3>
                             <form id="aclForm" class="space-y-4">
                                 <div>
-                                    <label for="aclPrincipal" class="block text-sm font-medium text-gray-700">Principal</label>
-                                    <input type="text" name="principal" id="aclPrincipal" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <label for="aclPrincipal" class="databricks-subheader">Principal</label>
+                                    <input type="text" name="principal" id="aclPrincipal" class="databricks-input" required>
                                     <p id="principalError" class="mt-2 text-sm text-red-600 hidden">Principal is required</p>
                                 </div>
                                 <div>
-                                    <label for="aclPermission" class="block text-sm font-medium text-gray-700">Permission</label>
-                                    <select name="permission" id="aclPermission" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <label for="aclPermission" class="databricks-subheader">Permission</label>
+                                    <select name="permission" id="aclPermission" class="databricks-input" required>
                                         <option value="">Select a permission</option>
                                         <option value="MANAGE">MANAGE</option>
                                         <option value="WRITE">WRITE</option>
@@ -305,10 +323,10 @@
                                     <p id="permissionError" class="mt-2 text-sm text-red-600 hidden">Permission is required</p>
                                 </div>
                                 <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                    <button type="submit" id="aclFormSubmit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm">
+                                    <button type="submit" id="aclFormSubmit" class="databricks-btn sm:col-start-2">
                                         Create
                                     </button>
-                                    <button type="button" id="aclFormCancel" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                                    <button type="button" id="aclFormCancel" class="databricks-btn-secondary sm:col-start-1">
                                         Cancel
                                     </button>
                                 </div>
