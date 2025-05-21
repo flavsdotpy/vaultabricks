@@ -7,6 +7,16 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #mainContent {
+            flex: 1;
+        }
+    </style>
 </head>
 <body class="bg-[#F5F5F5]">
     <!-- Navbar -->
@@ -330,6 +340,18 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#1E1E1E] border-t border-gray-800 py-4 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center items-center space-x-2">
+                <span class="text-gray-400">© 2025 Vaultabricks · Open Source under MIT License · </span>
+                <a href="https://github.com/flavsdotpy/vaultabricks" target="_blank" rel="noopener noreferrer" class="text-white hover:text-[#FF3621] transition-colors">
+                    Github
+                </a>
+            </div>
+        </div>
+    </footer>
 
     <script src="/static/js/main.js"></script>
 </body>
