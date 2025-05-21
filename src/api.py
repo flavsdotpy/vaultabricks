@@ -125,7 +125,7 @@ async def create_acl(scope_name: str, acl: AclCreate, workspace_host: str = Quer
 async def update_acl(scope_name: str, principal: str, acl: AclUpdate, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
         client = WorkspaceClient(host=workspace_host, token=pat)
-        client.secrets.put_acl(scope=scope_name, principal=principal, permission=acl.permission)
+        client.secrets.put_acl(scope=scope_name, principal=principal, permission=AclPermission(acl.permission))
         return {"message": "ACL updated successfully"}
     except Exception as e:
         if "401" in str(e):

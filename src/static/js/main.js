@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             $('secretsLoadingState').classList.add('hidden');
             $('aclsLoadingState').classList.add('hidden');
-            $('scopesList').classList.add('hidden');
         }
     };
 
@@ -248,8 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(error.detail || 'Failed to create secret');
             }
 
-            hideSecretForm();
-            fetchSecrets(scopeName);
         } catch (error) {
             $('secretsErrorMessage').textContent = error.message;
             showSecretsState($('secretsErrorState'));
@@ -274,8 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(error.detail || 'Failed to update secret');
             }
 
-            hideSecretForm();
-            fetchSecrets(scopeName);
         } catch (error) {
             $('secretsErrorMessage').textContent = error.message;
             showSecretsState($('secretsErrorState'));
@@ -399,12 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const acls = await response.json();
             
             if (acls.length === 0) {
-                $('emptyAclsState').classList.remove('hidden');
-                $('aclsList').classList.add('hidden');
+                showAclsState($('emptyAclsState'));
             } else {
-                $('emptyAclsState').classList.add('hidden');
-                $('aclsList').classList.remove('hidden');
-                
                 acls.forEach(acl => {
                     const aclItem = $('aclItemTemplate').content.cloneNode(true);
                     const aclDiv = aclItem.querySelector('div');
@@ -430,10 +421,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     $('aclsList').appendChild(aclItem);
                 });
+                showAclsState($('aclsList'));
             }
         } catch (error) {
-            $('aclsErrorState').classList.remove('hidden');
             $('aclsErrorMessage').textContent = error.message;
+            showAclsState($('aclsErrorState'))
         }
     };
 
@@ -454,12 +446,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const error = await response.json();
                 throw new Error(error.detail || 'Failed to create ACL');
             }
-
-            hideAclForm();
-            fetchAcls(scopeName);
         } catch (error) {
-            $('aclsErrorState').classList.remove('hidden');
             $('aclsErrorMessage').textContent = error.message;
+            showAclsState($('aclsErrorState'))
         }
     };
 
@@ -480,12 +469,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const error = await response.json();
                 throw new Error(error.detail || 'Failed to update ACL');
             }
-
-            hideAclForm();
-            fetchAcls(scopeName);
         } catch (error) {
-            $('aclsErrorState').classList.remove('hidden');
             $('aclsErrorMessage').textContent = error.message;
+            showAclsState($('aclsErrorState'))
         }
     };
 
@@ -505,8 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             fetchAcls(scopeName);
         } catch (error) {
-            $('aclsErrorState').classList.remove('hidden');
             $('aclsErrorMessage').textContent = error.message;
+            showAclsState($('aclsErrorState'))
         }
     };
 
@@ -543,9 +529,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 await createAcl(currentScope, principal, permission);
             }
+            hideAclForm();
+            fetchAcls(currentScope);
         } catch (error) {
-            $('aclsErrorState').classList.remove('hidden');
             $('aclsErrorMessage').textContent = error.message;
+            showAclsState($('aclsErrorState'))
         }
     });
 }); 
