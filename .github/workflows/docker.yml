@@ -5,7 +5,8 @@ on:
     branches: [ main ]
     paths:
       - 'src/**'
-      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'poetry.lock'
   pull_request:
     branches: [ main ]
 
