@@ -13,3 +13,6 @@ class AclCreate(BaseModel):
 
 class AclUpdate(BaseModel):
     permission: str
+
+class ScopeCreate(BaseModel):
+    name: str

@@ -2,7 +2,7 @@ from fastapi import HTTPException, Query, APIRouter
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.workspace import AclPermission
 
-from models import SecretCreate, SecretUpdate, AclCreate, AclUpdate
+from models import SecretCreate, SecretUpdate, AclCreate, AclUpdate, ScopeCreate
 
 
 router = APIRouter(
@@ -25,6 +25,22 @@ async def list_scopes(workspace_host: str = Query(...), pat: str = Query(...)):
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.post("/scopes")
+async def create_scope(scope: ScopeCreate, workspace_host: str = Query(...), pat: str = Query(...)):
+    try:
+        client = WorkspaceClient(host=workspace_host, token=pat)
+        client.secrets.create_scope(scope=scope.name)
+        return {"message": "Scope created successfully"}
+    except Exception as e:
+        if "401" in str(e):
+            raise HTTPException(status_code=401, detail="Invalid PAT or insufficient permissions")
+        elif "409" in str(e):
+            raise HTTPException(status_code=409, detail="Scope already exists")
+        else:
+            raise HTTPException(status_code=500, detail=str(e)) 
+
+
 @router.get("/scopes/{scope_name}/secrets")
 async def list_secrets(scope_name: str, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
@@ -45,6 +61,7 @@ async def list_secrets(scope_name: str, workspace_host: str = Query(...), pat: s
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/scopes/{scope_name}/secrets")
 async def create_secret(scope_name: str, secret: SecretCreate, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
@@ -58,6 +75,7 @@ async def create_secret(scope_name: str, secret: SecretCreate, workspace_host: s
             raise HTTPException(status_code=404, detail="Scope not found")
         else:
             raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.put("/scopes/{scope_name}/secrets/{key}")
 async def update_secret(scope_name: str, key: str, secret: SecretUpdate, workspace_host: str = Query(...), pat: str = Query(...)):
@@ -73,6 +91,7 @@ async def update_secret(scope_name: str, key: str, secret: SecretUpdate, workspa
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.delete("/scopes/{scope_name}/secrets/{key}")
 async def delete_secret(scope_name: str, key: str, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
@@ -86,6 +105,7 @@ async def delete_secret(scope_name: str, key: str, workspace_host: str = Query(.
             raise HTTPException(status_code=404, detail="Scope or secret not found")
         else:
             raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/scopes/{scope_name}/acls")
 async def list_acls(scope_name: str, workspace_host: str = Query(...), pat: str = Query(...)):
@@ -107,6 +127,7 @@ async def list_acls(scope_name: str, workspace_host: str = Query(...), pat: str 
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/scopes/{scope_name}/acls")
 async def create_acl(scope_name: str, acl: AclCreate, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
@@ -120,6 +141,7 @@ async def create_acl(scope_name: str, acl: AclCreate, workspace_host: str = Quer
             raise HTTPException(status_code=404, detail="Scope not found")
         else:
             raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.put("/scopes/{scope_name}/acls/{principal}")
 async def update_acl(scope_name: str, principal: str, acl: AclUpdate, workspace_host: str = Query(...), pat: str = Query(...)):
@@ -135,6 +157,7 @@ async def update_acl(scope_name: str, principal: str, acl: AclUpdate, workspace_
         else:
             raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.delete("/scopes/{scope_name}/acls/{principal}")
 async def delete_acl(scope_name: str, principal: str, workspace_host: str = Query(...), pat: str = Query(...)):
     try:
@@ -147,4 +170,4 @@ async def delete_acl(scope_name: str, principal: str, workspace_host: str = Quer
         elif "404" in str(e):
             raise HTTPException(status_code=404, detail="Scope or ACL not found")
         else:
-            raise HTTPException(status_code=500, detail=str(e)) 
+            raise HTTPException(status_code=500, detail=str(e))

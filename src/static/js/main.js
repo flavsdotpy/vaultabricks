@@ -170,6 +170,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const showCreateScopeForm = () => {
+        $('createScopeModal').classList.remove('hidden');
+        $('scopeForm').reset();
+        $('scopeNameError').classList.add('hidden');
+    }
+
+    const hideCreateScopeForm = () => {
+        $('createScopeModal').classList.add('hidden');
+    }    
+
+    const createScope = async (scopeName) => {
+        const workspaceHost = $('workspaceHost').value.trim();
+        const pat = $('pat').value.trim();
+
+        const response = await fetch(`/api/scopes?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: scopeName
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to create secret');
+        }
+    };
+
+    $('createScope').addEventListener('click', showCreateScopeForm);
+    $('cancelCreateScope').addEventListener('click', hideCreateScopeForm);
+    $('scopeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const scopeName = $('scopeNameInput').value.trim();
+        let hasError = false;
+
+        $('scopeNameError').classList.add('hidden');
+
+        if (!scopeName) {
+            $('scopeNameError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (hasError) {
+            return;
+        }
+
+        try {
+            await createScope(scopeName);
+            hideCreateScopeForm();
+            fetchScopes();
+        } catch (error) {
+            $('errorMessage').textContent = error.message;
+            showState($('errorState'));
+            hideCreateScopeForm();
+        }
+    });
+
     const fetchSecrets = async (scopeName) => {
         $('secretsList').innerHTML = '';
         showSecretsState($('secretsLoadingState'));
@@ -233,47 +292,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
 
-        try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ key, value }),
-            });
+        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ key, value }),
+        });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to create secret');
-            }
-
-        } catch (error) {
-            $('secretsErrorMessage').textContent = error.message;
-            showSecretsState($('secretsErrorState'));
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to create secret');
         }
+
     };
 
     const updateSecret = async (scopeName, key, value) => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
 
-        try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ value }),
-            });
+        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ value }),
+        });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to update secret');
-            }
-
-        } catch (error) {
-            $('secretsErrorMessage').textContent = error.message;
-            showSecretsState($('secretsErrorState'));
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to update secret');
         }
     };
 
@@ -281,26 +329,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
 
-        try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
-                method: 'DELETE',
-            });
+        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+            method: 'DELETE',
+        });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to delete secret');
-            }
-
-            fetchSecrets(scopeName);
-        } catch (error) {
-            $('secretsErrorMessage').textContent = error.message;
-            showSecretsState($('secretsErrorState'));
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to delete secret');
         }
+
+        fetchSecrets(scopeName);
     };
 
     $('workspaceHost').addEventListener('change', fetchScopes);
     $('pat').addEventListener('change', fetchScopes);
     $('refreshScopes').addEventListener('click', fetchScopes);
+    $('refreshScopesError').addEventListener('click', fetchScopes);
+    $('refreshScopesEmpty').addEventListener('click', fetchScopes);
     $('backToScopes').addEventListener('click', () => {
         showState($('scopesList'));
     });
@@ -349,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             $('secretsErrorMessage').textContent = error.message;
             showSecretsState($('secretsErrorState'));
+            hideSecretForm();
         }
     });
 
@@ -433,22 +479,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
 
-        try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ principal, permission }),
-            });
+        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ principal, permission }),
+        });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to create ACL');
-            }
-        } catch (error) {
-            $('aclsErrorMessage').textContent = error.message;
-            showAclsState($('aclsErrorState'))
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to create ACL');
         }
     };
 
@@ -456,22 +497,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
 
-        try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ permission }),
-            });
+        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ permission }),
+        });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to update ACL');
-            }
-        } catch (error) {
-            $('aclsErrorMessage').textContent = error.message;
-            showAclsState($('aclsErrorState'))
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to update ACL');
         }
     };
 
@@ -479,21 +515,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const workspaceHost = $('workspaceHost').value.trim();
         const pat = $('pat').value.trim();
 
-        try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
-                method: 'DELETE',
-            });
+        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+            method: 'DELETE',
+        });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to delete ACL');
-            }
-
-            fetchAcls(scopeName);
-        } catch (error) {
-            $('aclsErrorMessage').textContent = error.message;
-            showAclsState($('aclsErrorState'))
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to delete ACL');
         }
+
+        fetchAcls(scopeName);
     };
 
     $('addAcl').addEventListener('click', () => {
@@ -534,6 +565,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             $('aclsErrorMessage').textContent = error.message;
             showAclsState($('aclsErrorState'))
+            hideAclForm();
         }
     });
+
 }); 
