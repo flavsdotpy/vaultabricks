@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "vaultabricks"
+version = "1.0.0"
+description = "A modern web interface for managing Databricks Secrets"
+authors = ["flavsdotpy"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "0.104.1"
+uvicorn = "0.24.0"
+databricks-sdk = "0.12.0"
+jinja2 = "3.1.2"
+pydantic = "2.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api" 

@@ -16,10 +16,10 @@ Vaultabricks is a web-based interface for managing Databricks Secrets and Access
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/your-username/vaultabricks:latest
+docker pull ghcr.io/flavsdotpy/vaultabricks:latest
 
 # Run the container
-docker run -p 5050:5050 ghcr.io/your-username/vaultabricks:latest
+docker run -p 5050:5050 ghcr.io/flavsdotpy/vaultabricks:latest
 ```
 
 The application will be available at `http://localhost:5050`
@@ -28,18 +28,22 @@ The application will be available at `http://localhost:5050`
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/vaultabricks.git
+git clone https://github.com/flavsdotpy/vaultabricks.git
 cd vaultabricks
 ```
 
 2. Install dependencies:
 ```bash
-pip install -r requirements.txt
+# Install Poetry if you haven't already
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Install project dependencies
+poetry install
 ```
 
 3. Run the application:
 ```bash
-uvicorn main:app --reload --port 5050
+poetry run uvicorn main:app --reload --port 5050
 ```
 
 ## Usage
@@ -53,6 +57,7 @@ uvicorn main:app --reload --port 5050
 ### Prerequisites
 
 - Python 3.11+
+- Poetry
 - Docker (optional)
 
 ### Building Docker Image

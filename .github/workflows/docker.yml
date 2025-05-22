@@ -3,6 +3,9 @@ name: Docker Build and Push
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'requirements.txt'
   pull_request:
     branches: [ main ]
 
