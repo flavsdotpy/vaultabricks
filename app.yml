@@ -1,0 +1,7 @@
+command:
+  - uvicorn
+  - main:app
+  - --port
+  - $DATABRICKS_APP_PORT
+  - --host
+  - 0.0.0.0
