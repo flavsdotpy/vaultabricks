@@ -5,15 +5,64 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentAclPrincipal = null;
 
     const $ = (id) => document.getElementById(id);
+    const isDatabricksApp = document.body.dataset.isDatabricksApp === 'true';
+    const databricksHost = document.body.dataset.databricksHost || '';
 
-    $('toggleLock').addEventListener('click', () => {
-        isLocked = !isLocked;
-        $('pat').disabled = isLocked;
-        $('workspaceHost').disabled = isLocked;
-        $('toggleLock').innerHTML = isLocked 
-            ? '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>'
-            : '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>';
-    });
+    const getWorkspaceHost = () => isDatabricksApp ? databricksHost : $('workspaceHost').value.trim();
+    const getPat = () => $('pat').value.trim();
+    const buildApiUrl = (path) => {
+        if (isDatabricksApp) {
+            return path;
+        }
+
+        const params = new URLSearchParams({
+            workspace_host: getWorkspaceHost(),
+            pat: getPat(),
+        });
+
+        return `${path}?${params.toString()}`;
+    };
+
+    const parseResponse = async (response) => {
+        const payload = await response.text();
+
+        if (!payload) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(payload);
+        } catch {
+            return payload;
+        }
+    };
+
+    const apiRequest = async (path, options = {}) => {
+        const response = await fetch(buildApiUrl(path), options);
+        const payload = await parseResponse(response);
+
+        if (!response.ok) {
+            const message = payload && typeof payload === 'object' ? payload.detail : null;
+            throw new Error(message || `Request failed with status ${response.status}`);
+        }
+
+        return payload;
+    };
+
+    if (isDatabricksApp) {
+        $('workspaceHost').value = databricksHost;
+        $('workspaceHost').disabled = true;
+        $('pat').disabled = true;
+    } else {
+        $('toggleLock').addEventListener('click', () => {
+            isLocked = !isLocked;
+            $('pat').disabled = isLocked;
+            $('workspaceHost').disabled = isLocked;
+            $('toggleLock').innerHTML = isLocked
+                ? '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>'
+                : '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>';
+        });
+    }
 
     const validateWorkspaceHost = (host) => {
         try {
@@ -110,42 +159,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchScopes = async () => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
+        const workspaceHost = getWorkspaceHost();
+        const pat = getPat();
 
-        if (!workspaceHost || !pat) {
-            showState($('initialState'));
-            return;
-        }
+        if (!isDatabricksApp) {
+            if (!workspaceHost || !pat) {
+                showState($('initialState'));
+                return;
+            }
 
-        if (!validateWorkspaceHost(workspaceHost)) {
-            $('errorMessage').textContent = 'Invalid workspace host URL. Must be a valid Databricks workspace URL (e.g., https://your-workspace.cloud.databricks.com)';
-            showState($('errorState'));
-            return;
-        }
+            if (!validateWorkspaceHost(workspaceHost)) {
+                $('errorMessage').textContent = 'Invalid workspace host URL. Must be a valid Databricks workspace URL (e.g., https://your-workspace.cloud.databricks.com)';
+                showState($('errorState'));
+                return;
+            }
 
-        if (!validatePAT(pat)) {
-            $('errorMessage').textContent = 'Invalid PAT format. Must be a 32 character hex string.';
-            showState($('errorState'));
-            return;
+            if (!validatePAT(pat)) {
+                $('errorMessage').textContent = 'Invalid PAT format. Must be a 32 character hex string.';
+                showState($('errorState'));
+                return;
+            }
         }
 
         try {
             showState($('loadingState'));
-            
-            const response = await fetch(`/api/scopes?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`);
-            if (!response.ok) {
-                const error = await response.json();
-                if (response.status === 401) {
-                    throw new Error('Invalid PAT or insufficient permissions');
-                } else if (response.status === 404) {
-                    throw new Error('Workspace not found');
-                } else {
-                    throw new Error(error.detail || 'Failed to fetch scopes');
-                }
-            }
-            
-            const scopes = await response.json();
+            const scopes = await apiRequest('/api/scopes');
             
             if (scopes.length === 0) {
                 showState($('emptyState'));
@@ -181,10 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }    
 
     const createScope = async (scopeName) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
-        const response = await fetch(`/api/scopes?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+        await apiRequest('/api/scopes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -193,11 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: scopeName
             }),
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to create secret');
-        }
     };
 
     $('createScope').addEventListener('click', showCreateScopeForm);
@@ -233,23 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
         $('secretsList').innerHTML = '';
         showSecretsState($('secretsLoadingState'));
 
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
         try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`);
-            if (!response.ok) {
-                const error = await response.json();
-                if (response.status === 401) {
-                    throw new Error('Invalid PAT or insufficient permissions');
-                } else if (response.status === 404) {
-                    throw new Error('Scope not found');
-                } else {
-                    throw new Error(error.detail || 'Failed to fetch secrets');
-                }
-            }
-            
-            const secrets = await response.json();
+            const secrets = await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/secrets`);
 
             if (secrets.length === 0) {
                 showSecretsState($('emptySecretsState'));
@@ -289,10 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const createSecret = async (scopeName, key, value) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
-        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+        await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/secrets`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -300,49 +312,31 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({ key, value }),
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to create secret');
-        }
-
     };
 
     const updateSecret = async (scopeName, key, value) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
-        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+        await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ value }),
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to update secret');
-        }
     };
 
     const deleteSecret = async (scopeName, key) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
-        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+        await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/secrets/${encodeURIComponent(key)}`, {
             method: 'DELETE',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to delete secret');
-        }
 
         fetchSecrets(scopeName);
     };
 
-    $('workspaceHost').addEventListener('change', fetchScopes);
-    $('pat').addEventListener('change', fetchScopes);
+    if (!isDatabricksApp) {
+        $('workspaceHost').addEventListener('change', fetchScopes);
+        $('pat').addEventListener('change', fetchScopes);
+    }
+
     $('refreshScopes').addEventListener('click', fetchScopes);
     $('refreshScopesError').addEventListener('click', fetchScopes);
     $('refreshScopesEmpty').addEventListener('click', fetchScopes);
@@ -418,26 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchAcls = async (scopeName) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
         $('aclsList').innerHTML = '';
         showAclsState($('aclsLoadingState'));
 
         try {
-            const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`);
-            if (!response.ok) {
-                const error = await response.json();
-                if (response.status === 401) {
-                    throw new Error('Invalid PAT or insufficient permissions');
-                } else if (response.status === 404) {
-                    throw new Error('Scope not found');
-                } else {
-                    throw new Error(error.detail || 'Failed to fetch ACLs');
-                }
-            }
-            
-            const acls = await response.json();
+            const acls = await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/acls`);
             
             if (acls.length === 0) {
                 showAclsState($('emptyAclsState'));
@@ -476,53 +455,29 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const createAcl = async (scopeName, principal, permission) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
-        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+        await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/acls`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ principal, permission }),
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to create ACL');
-        }
     };
 
     const updateAcl = async (scopeName, principal, permission) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
-        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+        await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ permission }),
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to update ACL');
-        }
     };
 
     const deleteAcl = async (scopeName, principal) => {
-        const workspaceHost = $('workspaceHost').value.trim();
-        const pat = $('pat').value.trim();
-
-        const response = await fetch(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}?workspace_host=${encodeURIComponent(workspaceHost)}&pat=${encodeURIComponent(pat)}`, {
+        await apiRequest(`/api/scopes/${encodeURIComponent(scopeName)}/acls/${encodeURIComponent(principal)}`, {
             method: 'DELETE',
         });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to delete ACL');
-        }
 
         fetchAcls(scopeName);
     };
@@ -568,5 +523,9 @@ document.addEventListener('DOMContentLoaded', () => {
             hideAclForm();
         }
     });
+
+    if (isDatabricksApp) {
+        fetchScopes();
+    }
 
 }); 

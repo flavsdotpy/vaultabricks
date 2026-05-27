@@ -18,7 +18,7 @@
         }
     </style>
 </head>
-<body class="bg-[#F5F5F5]">
+<body class="bg-[#F5F5F5]" data-is-databricks-app="{{ 'true' if is_databricks_app else 'false' }}" data-databricks-host="{{ databricks_host }}">
     <!-- Navbar -->
     <nav class="bg-[#1E1E1E] border-b border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,6 +42,11 @@
         <!-- Connection Settings Section -->
         <div class="databricks-card p-6 mb-8">
             <div class="space-y-4">
+                {% if is_databricks_app %}
+                <div class="rounded-lg border border-[#FFB8B1] bg-[#FFF4F2] px-4 py-3 text-sm text-[#7A1C12]">
+                    Running inside a Databricks App. Vaultabricks will use the app runtime's Databricks authentication automatically.
+                </div>
+                {% endif %}
                 <div>
                     <label for="workspaceHost" class="databricks-subheader">Workspace Host</label>
                     <div class="mt-1 relative rounded-md shadow-sm">
@@ -50,10 +55,12 @@
                                id="workspaceHost" 
                                class="databricks-input"
                                placeholder="https://your-workspace.cloud.databricks.com"
-                               autocomplete="url">
+                               autocomplete="url"
+                               value="{{ databricks_host }}"
+                               {% if is_databricks_app %}readonly{% endif %}>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-4 {% if is_databricks_app %}hidden{% endif %}">
                     <div class="flex-1">
                         <label for="pat" class="databricks-subheader">Databricks Personal Access Token</label>
                         <div class="mt-1 relative rounded-md shadow-sm">
@@ -64,7 +71,7 @@
                                    placeholder="Enter your PAT">
                         </div>
                     </div>
-                    <button id="toggleLock" class="databricks-btn">
+                    <button id="toggleLock" class="databricks-btn {% if is_databricks_app %}hidden{% endif %}">
                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                         </svg>
@@ -77,7 +84,11 @@
         <div id="mainContent" class="databricks-card p-6">
             <!-- Initial State -->
             <div id="initialState" class="text-gray-500 text-center">
+                {% if is_databricks_app %}
+                Loading scopes from the current Databricks App workspace
+                {% else %}
                 Enter your workspace host and PAT to start managing secrets
+                {% endif %}
             </div>
 
             <!-- Loading State -->
