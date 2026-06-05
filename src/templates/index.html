@@ -19,7 +19,6 @@
     </style>
 </head>
 <body class="bg-[#F5F5F5]">
-    <!-- Navbar -->
     <nav class="bg-[#1E1E1E] border-b border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -39,18 +38,28 @@
     </nav>
 
     <div class="container mx-auto px-4 py-8">
-        <!-- Connection Settings Section -->
         <div class="databricks-card p-6 mb-8">
             <div class="space-y-4">
                 <div>
                     <label for="workspaceHost" class="databricks-subheader">Workspace Host</label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                        <input type="text" 
-                               name="workspaceHost" 
-                               id="workspaceHost" 
-                               class="databricks-input"
-                               placeholder="https://your-workspace.cloud.databricks.com"
-                               autocomplete="url">
+                    <div class="mt-1 space-y-2">
+                        <div id="hostDropdownContainer" class="relative rounded-md shadow-sm hidden">
+                            <select 
+                                id="hostDropdown"
+                                class="databricks-input"
+                                onchange="document.getElementById('workspaceHost').value = this.value; document.getElementById('workspaceHost').dispatchEvent(new Event('input'))">
+                                <option value="">Select a host...</option>
+                            </select>
+                        </div>
+                        <div id="hostTextInputContainer">
+                            <input type="text" 
+                                   name="workspaceHost" 
+                                   id="workspaceHost" 
+                                   class="databricks-input"
+                                   placeholder="https://your-workspace.cloud.databricks.com"
+                                   autocomplete="url"
+                                   oninput="handleHostChange()">
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -73,21 +82,17 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
         <div id="mainContent" class="databricks-card p-6">
-            <!-- Initial State -->
             <div id="initialState" class="text-gray-500 text-center">
                 Enter your workspace host and PAT to start managing secrets
             </div>
 
-            <!-- Loading State -->
             <div id="loadingState" class="hidden">
                 <div class="flex justify-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF3621]"></div>
                 </div>
             </div>
 
-            <!-- Error State -->
             <div id="errorState" class="hidden text-center py-8">
                 <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -102,7 +107,6 @@
                 </button>
             </div>
 
-            <!-- Empty State -->
             <div id="emptyState" class="hidden">
                 <p class="text-gray-500 text-center">No scopes found</p>
                 </br>
@@ -113,7 +117,6 @@
                 </button>
             </div>
 
-            <!-- Scopes List -->
             <div id="scopesList" class="hidden">
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
@@ -130,19 +133,16 @@
                         </div>
                     </div>
                     <div id="scopesGrid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <!-- Scope items will be cloned here -->
                     </div>
                 </div>
             </div>
 
-            <!-- Scope Item Template -->
             <template id="scopeItemTemplate">
                 <div class="databricks-card p-4 hover:shadow-md transition-shadow cursor-pointer" data-scope-name="">
                     <h3 class="databricks-subheader"></h3>
                 </div>
             </template>
 
-            <!-- Secret Item Template -->
             <template id="secretItemTemplate">
                 <div class="databricks-card p-4 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
@@ -166,7 +166,6 @@
                 </div>
             </template>
 
-            <!-- ACL Item Template -->
             <template id="aclItemTemplate">
                 <div class="databricks-card p-4 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
@@ -190,7 +189,6 @@
                 </div>
             </template>
 
-            <!-- Scope Details View -->
             <div id="scopeDetails" class="hidden">
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
@@ -209,7 +207,6 @@
                         </button>
                     </div>
 
-                    <!-- Secrets Section -->
                     <div class="mb-8">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="databricks-header">Secrets</h2>
@@ -221,9 +218,7 @@
                             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF3621]"></div>
                         </div>
                         <div id="secretsList" class="space-y-4">
-                            <!-- Secret items will be added here -->
                         </div>
-                        <!-- Empty Secrets State -->
                         <div id="emptySecretsState" class="hidden text-center py-8">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -231,7 +226,6 @@
                             <h3 class="mt-2 databricks-subheader">No Secrets</h3>
                             <p class="mt-1 text-sm text-gray-500">Get started by creating a new secret.</p>
                         </div>
-                        <!-- Error State -->
                         <div id="secretsErrorState" class="hidden text-center py-8">
                             <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -241,7 +235,6 @@
                         </div>
                     </div>
 
-                    <!-- ACL Management -->
                     <div class="mb-8">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="databricks-header">Access Control</h2>
@@ -253,9 +246,7 @@
                             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF3621]"></div>
                         </div>
                         <div id="aclsList" class="space-y-4">
-                            <!-- ACL items will be added here -->
                         </div>
-                        <!-- Empty ACLs State -->
                         <div id="emptyAclsState" class="hidden text-center py-8">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -263,7 +254,6 @@
                             <h3 class="mt-2 databricks-subheader">No ACLs</h3>
                             <p class="mt-1 text-sm text-gray-500">Get started by creating a new ACL.</p>
                         </div>
-                        <!-- Error State -->
                         <div id="aclsErrorState" class="hidden text-center py-8">
                             <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -275,7 +265,6 @@
                 </div>
             </div>
 
-            <!-- Confirmation Modal -->
             <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
                 <div class="databricks-card p-6 max-w-md w-full mx-4">
                     <h3 class="databricks-header mb-4" id="confirmationTitle"></h3>
@@ -291,7 +280,6 @@
                 </div>
             </div>
 
-            <!-- Secret Form Modal -->
             <div id="secretFormModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
                 <div class="databricks-card p-6 max-w-md w-full mx-4">
                     <h3 class="databricks-header mb-4" id="secretFormTitle"></h3>
@@ -318,7 +306,6 @@
                 </div>
             </div>
 
-            <!-- ACL Form Modal -->
             <div id="aclFormModal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
                 <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
@@ -356,7 +343,6 @@
                 </div>
             </div>
 
-            <!-- Create Scope Modal -->
             <div id="createScopeModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
                 <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                     <div class="mt-3">
@@ -378,7 +364,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="bg-[#1E1E1E] border-t border-gray-800 py-4 mt-auto">
         <div class="container mx-auto px-4">
             <div class="flex justify-center items-center space-x-2">

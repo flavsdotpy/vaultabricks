@@ -1,3 +1,5 @@
+import os
+import json
 from fastapi import HTTPException, Query, APIRouter
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.workspace import AclPermission
@@ -10,6 +12,24 @@ router = APIRouter(
     tags=["secrets"],
 
 )
+
+@router.get("/hosts")
+async def get_hosts():
+    """Return list of available hosts from environment variable."""
+    hosts_env = os.getenv("VAULTABRICKS_HOSTS")
+    
+    if not hosts_env:
+        return []
+    
+    try:
+        hosts = json.loads(hosts_env)
+        if isinstance(hosts, list):
+            return hosts
+    except json.JSONDecodeError:
+        hosts = [host.strip() for host in hosts_env.split(",") if host.strip()]
+        return hosts
+    
+    return []
 
 @router.get("/scopes")
 async def list_scopes(workspace_host: str = Query(...), pat: str = Query(...)):
